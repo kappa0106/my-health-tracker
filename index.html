@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人體態養成紀錄 v4.0 (高彈性分享版)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 50px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .settings-card {
+            border: 2px dashed #3498db;
+            background-color: #eaf2f8;
+        }
+        h2 {
+            font-size: 19px;
+            color: #16a085;
+            margin-top: 0;
+            border-bottom: 2px solid #e0e6ed;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .btn {
+            background-color: #16a085;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background-color: #1abc9c;
+        }
+        .btn-clear {
+            background-color: #e74c3c;
+        }
+        .btn-clear:hover {
+            background-color: #c0392b;
+        }
+        .btn-setting {
+            background-color: #7f8c8d;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .btn-video {
+            background-color: #34495e;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .video-group {
+            margin-top: 15px;
+            border-top: 1px dashed #ccc;
+            padding-top: 15px;
+        }
+        .video-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .water-display {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: #3498db;
+        }
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        label {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        .date-display {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .target-tag {
+            font-size: 12px;
+            background-color: #e67e22;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+        .video-edit-item {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: #fff; 
+            padding: 8px; 
+            border-radius: 5px; 
+            margin-bottom: 5px; 
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>✨ 體態養成日常紀錄</h1>
+    <div class="date-display" id="todayDate"></div>
+
+    <button class="btn btn-setting" onclick="toggleSettings()">⚙️ 展開 / 隱藏個人化設定</button>
+
+    <div class="card settings-card" id="settingsArea" style="display: none;">
+        <h2 style="color: #2980b9;">⚙️ 基本數據設定</h2>
+        <label>自訂藥物名稱與劑量：</label>
+        <input type="text" id="setMedName" placeholder="例：維他命C 1顆 / 某藥物 2.5mg">
+        <label>每日飲水目標 (ml)：</label>
+        <input type="number" id="setWaterGoal" placeholder="例：2000">
+        <label>常用自帶水壺容量 (ml)：</label>
+        <input type="number" id="setCustomCup" placeholder="例：700">
+        <button class="btn" style="width: 100%; margin-top: 15px; background-color: #2980b9;" onclick="saveSettings()">💾 儲存基本設定</button>
+
+        <hr style="border:1px dashed #ccc; margin: 20px 0;">
+
+        <h2 style="color: #8e44ad;">🎥 自訂訓練影片清單</h2>
+        <div id="videoEditList"></div>
+        
+        <div style="background-color: #fff; padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #ddd;">
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 5px;">新增影片</div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="newVideoTag" placeholder="標籤 (例:有氧)" style="width:35%; margin-top:0;">
+                <input type="text" id="newVideoTitle" placeholder="按鈕名稱" style="width:65%; margin-top:0;">
+            </div>
+            <input type="text" id="newVideoUrl" placeholder="YouTube 網址連結" style="margin-top:8px;">
+            <button class="btn" style="width: 100%; margin-top: 8px; background-color: #8e44ad;" onclick="addVideo()">➕ 新增影片至清單</button>
+        </div>
+        <button class="btn btn-clear" style="width: 100%; margin-top: 10px; opacity: 0.8;" onclick="resetVideos()">🔄 恢復內建預設影片清單</button>
+    </div>
+
+    <div class="card">
+        <h2>💉 藥劑紀錄</h2>
+        <label>
+            <input type="checkbox" id="medicationCheck" onchange="saveData()">
+            本週已施打：<span id="displayMedName" style="font-weight: bold; margin-left: 5px; color: #e74c3c;">未設定</span>
+        </label>
+    </div>
+
+    <div class="card">
+        <h2>💧 飲水紀錄 (目標: <span id="displayWaterGoal">0</span> ml)</h2>
+        <div class="water-display"><span id="waterCount">0</span> / <span id="displayWaterGoal2">0</span> ml</div>
+        <div style="text-align: center;">
+            <button class="btn" id="btnCustomCup" onclick="addCustomWater()">+ 0ml (自訂水壺)</button>
+            <button class="btn" onclick="addWater(250)">+ 250ml (一般杯)</button>
+            <button class="btn btn-clear" onclick="resetWater()">重置</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🥗 飲食紀錄</h2>
+        <label>早餐：</label>
+        <textarea id="breakfast" rows="2" placeholder="紀錄早餐..." oninput="saveData()"></textarea>
+        <label>午餐：</label>
+        <textarea id="lunch" rows="3" placeholder="紀錄午餐..." oninput="saveData()"></textarea>
+        <label>晚餐：</label>
+        <textarea id="dinner" rows="3" placeholder="紀錄晚餐..." oninput="saveData()"></textarea>
+        <button class="btn" style="margin-top: 15px; width: 100%; background-color: #34495e;" onclick="copyDiet()">📋 複製今日菜單</button>
+    </div>
+
+    <div class="card">
+        <h2>🏃‍♀️ 活動與影片訓練</h2>
+        <label>
+            <input type="checkbox" id="commuteCheck" onchange="saveData()">
+            日常活動：腳踏車/快走/散步 (有氧達成)
+        </label>
+        <label>
+            <input type="checkbox" id="yogaCheck" onchange="saveData()">
+            放鬆伸展：椅子伸展瑜珈
+        </label>
+        
+        <div class="video-group" id="videoDisplayGroup">
+            </div>
+
+        <label style="margin-top: 15px;">
+            <input type="checkbox" id="videoWorkoutCheck" onchange="saveData()">
+            今日已完成清單內任一影片訓練 ✨
+        </label>
+    </div>
+
+    <button class="btn btn-clear" style="width: 100%; padding: 12px; font-size: 16px;" onclick="clearAllDaily()">🔄 換日清空日常紀錄</button>
+
+    <script>
+        // --- 預設影片清單 ---
+        const defaultVideos = [
+            {tag: "全身有氧", title: "帕梅拉 15min 新手全身(無跳)", url: "https://www.youtube.com/watch?v=gC_L9qAHVJ8"},
+            {tag: "瘦腿雕塑", title: "帕梅拉 12min 內外大腿", url: "https://www.youtube.com/watch?v=uKof40N90_8"},
+            {tag: "瘦腿雕塑", title: "歐陽春曉 瘦大腿/改假胯寬", url: "https://www.youtube.com/watch?v=F0OUpqXw68Y"},
+            {tag: "瘦腰核心", title: "帕梅拉 10min 經典腹肌", url: "https://www.youtube.com/watch?v=1f8yoFFdkcY"},
+            {tag: "瘦腰核心", title: "歐陽春曉 沙漏腰訓練", url: "https://www.youtube.com/watch?v=S08bC7N0T3s"}
+        ];
+
+        // 顯示今日日期
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+        document.getElementById('todayDate').innerText = new Date().toLocaleDateString('zh-TW', dateOptions);
+
+        // 展開/隱藏設定區塊
+        function toggleSettings() {
+            const area = document.getElementById('settingsArea');
+            area.style.display = area.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // --- 影片管理功能 ---
+        function getVideos() {
+            const stored = localStorage.getItem('userVideos');
+            if (stored) return JSON.parse(stored);
+            return [...defaultVideos]; // 若無紀錄則返回預設
+        }
+
+        function saveVideos(videos) {
+            localStorage.setItem('userVideos', JSON.stringify(videos));
+            renderVideos();
+        }
+
+        function renderVideos() {
+            const videos = getVideos();
+            const displayArea = document.getElementById('videoDisplayGroup');
+            const editArea = document.getElementById('videoEditList');
+
+            // 1. 渲染主畫面的影片按鈕
+            let displayHTML = '<div class="video-title">🎥 推薦訓練影片 (點擊跳轉)</div>';
+            if(videos.length === 0) {
+                displayHTML += '<div style="color:#7f8c8d; font-size:14px;">清單目前為空，請至設定區新增。</div>';
+            } else {
+                videos.forEach(v => {
+                    displayHTML += `<div style="margin-bottom: 10px; display: flex; align-items: center;">
+                        <span class="target-tag" style="min-width: 50px; text-align: center;">${v.tag}</span>
+                        <a href="${v.url}" target="_blank" class="btn btn-video" style="margin-bottom:0; flex-grow:1; text-align:center;">${v.title}</a>
+                    </div>`;
+                });
+            }
+            displayArea.innerHTML = displayHTML;
+
+            // 2. 渲染設定區的編輯清單
+            let editHTML = '';
+            videos.forEach((v, index) => {
+                editHTML += `<div class="video-edit-item">
+                    <div style="font-size:13px; overflow:hidden;">
+                        <strong>[${v.tag}]</strong> ${v.title}<br>
+                        <span style="color:#7f8c8d; font-size:11px; white-space: nowrap;">${v.url}</span>
+                    </div>
+                    <button class="btn btn-clear" style="padding:6px 12px; margin:0; font-size:12px; flex-shrink:0;" onclick="removeVideo(${index})">刪除</button>
+                </div>`;
+            });
+            editArea.innerHTML = editHTML;
+        }
+
+        function addVideo() {
+            const tag = document.getElementById('newVideoTag').value.trim();
+            const title = document.getElementById('newVideoTitle').value.trim();
+            const url = document.getElementById('newVideoUrl').value.trim();
+            
+            if(!tag || !title || !url) { 
+                alert('請填寫完整的標籤、名稱與網址！'); 
+                return; 
+            }
+            
+            const videos = getVideos();
+            videos.push({tag, title, url});
+            saveVideos(videos);
+            
+            // 清空輸入框
+            document.getElementById('newVideoTag').value = '';
+            document.getElementById('newVideoTitle').value = '';
+            document.getElementById('newVideoUrl').value = '';
+        }
+
+        function removeVideo(index) {
+            if(confirm('確定要刪除這支影片嗎？')) {
+                const videos = getVideos();
+                videos.splice(index, 1);
+                saveVideos(videos);
+            }
+        }
+
+        function resetVideos() {
+            if(confirm('確定要恢復預設的帕梅拉/歐陽春曉推薦清單嗎？你自訂的影片將會被覆蓋。')) {
+                localStorage.removeItem('userVideos');
+                renderVideos();
+            }
+        }
+
+        // --- 核心資料讀取與儲存 ---
+        function loadData() {
+            // 讀取隱私設定
+            const medName = localStorage.getItem('userMedName') || '未設定 (請展開設定)';
+            const waterGoal = localStorage.getItem('userWaterGoal') || '2000';
+            const customCup = localStorage.getItem('userCustomCup') || '500';
+
+            // 更新設定區的輸入框
+            document.getElementById('setMedName').value = localStorage.getItem('userMedName') || '';
+            document.getElementById('setWaterGoal').value = localStorage.getItem('userWaterGoal') || '';
+            document.getElementById('setCustomCup').value = localStorage.getItem('userCustomCup') || '';
+
+            // 更新畫面顯示
+            document.getElementById('displayMedName').innerText = medName;
+            document.getElementById('displayWaterGoal').innerText = waterGoal;
+            document.getElementById('displayWaterGoal2').innerText = waterGoal;
+            document.getElementById('btnCustomCup').innerText = `+ ${customCup}ml (自訂水壺)`;
+
+            // 讀取日常紀錄
+            document.getElementById('waterCount').innerText = localStorage.getItem('waterCount') || 0;
+            document.getElementById('medicationCheck').checked = localStorage.getItem('medicationCheck') === 'true';
+            document.getElementById('breakfast').value = localStorage.getItem('breakfast') || '';
+            document.getElementById('lunch').value = localStorage.getItem('lunch') || '';
+            document.getElementById('dinner').value = localStorage.getItem('dinner') || '';
+            document.getElementById('commuteCheck').checked = localStorage.getItem('commuteCheck') === 'true';
+            document.getElementById('yogaCheck').checked = localStorage.getItem('yogaCheck') === 'true';
+            document.getElementById('videoWorkoutCheck').checked = localStorage.getItem('videoWorkoutCheck') === 'true';
+            
+            // 渲染影片清單
+            renderVideos();
+        }
+
+        function saveSettings() {
+            const medName = document.getElementById('setMedName').value;
+            const waterGoal = document.getElementById('setWaterGoal').value;
+            const customCup = document.getElementById('setCustomCup').value;
+
+            if(medName) localStorage.setItem('userMedName', medName);
+            if(waterGoal) localStorage.setItem('userWaterGoal', waterGoal);
+            if(customCup) localStorage.setItem('userCustomCup', customCup);
+
+            loadData();
+            alert('基本設定已儲存！');
+        }
+
+        function saveData() {
+            localStorage.setItem('medicationCheck', document.getElementById('medicationCheck').checked);
+            localStorage.setItem('breakfast', document.getElementById('breakfast').value);
+            localStorage.setItem('lunch', document.getElementById('lunch').value);
+            localStorage.setItem('dinner', document.getElementById('dinner').value);
+            localStorage.setItem('commuteCheck', document.getElementById('commuteCheck').checked);
+            localStorage.setItem('yogaCheck', document.getElementById('yogaCheck').checked);
+            localStorage.setItem('videoWorkoutCheck', document.getElementById('videoWorkoutCheck').checked);
+        }
+
+        function addWater(amount) {
+            let current = parseInt(localStorage.getItem('waterCount')) || 0;
+            current += amount;
+            localStorage.setItem('waterCount', current);
+            document.getElementById('waterCount').innerText = current;
+        }
+
+        function addCustomWater() {
+            const customCup = parseInt(localStorage.getItem('userCustomCup')) || 500;
+            addWater(customCup);
+        }
+
+        function resetWater() {
+            localStorage.setItem('waterCount', 0);
+            document.getElementById('waterCount').innerText = 0;
+        }
+
+        function copyDiet() {
+            const b = document.getElementById('breakfast').value;
+            const l = document.getElementById('lunch').value;
+            const d = document.getElementById('dinner').value;
+            if(!b && !l && !d) { alert('請先輸入菜單！'); return; }
+            navigator.clipboard.writeText(`今日菜單評估：\n【早餐】${b}\n【午餐】${l}\n【晚餐】${d}`).then(() => {
+                alert('菜單已複製！可以傳送給教練或朋友了。');
+            });
+        }
+
+        function clearAllDaily() {
+            if(confirm('確定清空今天的日常紀錄嗎？（藥劑紀錄、隱私設定與影片清單會保留）')) {
+                resetWater();
+                document.getElementById('breakfast').value = '';
+                document.getElementById('lunch').value = '';
+                document.getElementById('dinner').value = '';
+                document.getElementById('commuteCheck').checked = false;
+                document.getElementById('yogaCheck').checked = false;
+                document.getElementById('videoWorkoutCheck').checked = false;
+                saveData();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // 網頁載入時執行
+        window.onload = loadData;
+    </script>
+</body>
+</html>
